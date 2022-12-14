@@ -1,85 +1,119 @@
 <template>
-  <div id="risk-level">
-    <van-nav-bar :title="title" left-text="返回" left-arrow @click-left="onClickLeft" />
-   <div class="action">
-     <div class="code">
-      <div>
-        <p>高风险</p>
-        <span>1</span>
-        <div @click="$router.push({path:'about'})">查看详情</div>
+  <div id="risk-level" style="padding: 40px 0">
+    <!-- <van-nav-bar :title="title" left-text="返回" left-arrow @click-left="onClickLeft" /> -->
+    <div class="action">
+      <div class="code">
+        <div>
+          <p>高风险</p>
+          <span>{{ result["高风险"] }}</span>
+          <div @click="filter('高风险')">查看详情</div>
+        </div>
+        <div id="main" style="width: 150px; height: 150px" ref="main"></div>
       </div>
-      <div id="main" style="width:150px;height:150px"></div>
-    </div>
-    <div class="code">
-      <div>
-        <p>警示</p>
-        <span>{{result['警示']}}</span>
-        <div @click="filter('警示')">查看详情</div>
+      <div class="code">
+        <div>
+          <p>警示</p>
+          <span>{{ result["警示"] }}</span>
+          <div @click="filter('警示')">查看详情</div>
+        </div>
+        <div id="main1" style="width: 150px; height: 150px" ref="main1"></div>
       </div>
-      <div id="main1" style="width:150px;height:150px"></div>
-    </div>
-    <div class="code">
-      <div>
-        <p>提示</p>
-        <span>{{result['提示']}}</span>
-        <div @click="filter('提示')">查看详情</div>
+      <div class="code">
+        <div>
+          <p>提示</p>
+          <span>{{ result["提示"] }}</span>
+          <div @click="filter('提示')">查看详情</div>
+        </div>
+        <div id="main2" style="width: 150px; height: 150px" ref="main2"></div>
       </div>
-      <div id="main2" style="width:150px;height:150px"></div>
-    </div>
-    <div class="code">
-      <div>
-        <p>利好</p>
-        <span>{{result['利好']}}</span>
-        <div @click="filter('利好')">查看详情</div>
+      <div class="code">
+        <div>
+          <p>利好</p>
+          <span>{{ result["利好"] }}</span>
+          <div @click="filter('利好')">查看详情</div>
+        </div>
+        <div id="main3" style="width: 150px; height: 150px" ref="main3"></div>
       </div>
-      <div id="main3" style="width:150px;height:150px"></div>
+      <div class="code2" style="padding: 10px">
+        <div id="main4" ref="main4" style="width: 100%; height: 300px"></div>
+      </div>
     </div>
-    <div class="code2">
-      <div id="main4" style="width:100%;height:300px"></div>
-    </div>
-   </div>
   </div>
 </template>
 
 <script>
-import * as echarts from "echarts";
+import * as echarts from "echarts"
 export default {
   name: "RiskLevel",
-  data() {
+  data () {
     return {
-      result: {},
-      res: this.$store.state.res,
-      title: this.$route.params.title
-    };
+      result: { 高风险: 0, 警示: 0, 提示: 0, 利好: 0 },
+      ECres: this.$store.state.ECres,
+      res2: null,
+      date: "",
+      res: [],
+      myChart: "",
+      myChart1: "",
+      myChart2: "",
+      myChart3: "",
+      myChart4: "",
+      search2: ['全部']
+    }
   },
   methods: {
-    onClickLeft() {
-      this.$router.go(-1);
+    // onClickLeft () {
+    //   this.$router.go(-1)
+    // },
+    into () {
+      this.result = { 高风险: 0, 警示: 0, 提示: 0, 利好: 0 }
+
+      this.res = this.res2.filter(item => {
+        if (this.search2.length != 0 && this.search2.indexOf("全部") == -1) {
+          return (
+            this.$store.state.nowDate / 1000 - item.时间戳 <= this.date &&
+            this.search2.find(a => a == item.分组)
+          )
+        } else {
+          return this.$store.state.nowDate / 1000 - item.时间戳 <= this.date
+        }
+      })
+      this.res.forEach(item => {
+        if (this.result[item["等级"]]) {
+          this.result[item["等级"]]++
+        } else {
+          this.result[item["等级"]] = 1
+        }
+      })
+      if (this.res.length == 0) {
+        this.res.length = 1
+      }
+      console.log(this.setOption2)
+      this.show5()
+      this.show1()
+      this.show2()
+      this.show3()
+      this.show4()
     },
-    filter(a) {
-      let result;
-      result = this.res.filter(item => item["等级"] == a);
+    filter (a) {
       this.$router.push({
         name: "details",
         params: {
-          result,
-          title: a
+          result: "等级",
+          a
         }
-      });
+      })
     },
-    show() {
-      let chartDom = document.getElementById("main");
-      let myChart = echarts.init(chartDom);
-      let option;
-      const gaugeData = [
+    show5 () {
+      let option
+      let gaugeData = [
         {
-          value: ((1 / 170) * 100).toFixed(2),
+          value: ((this.result["高风险"] / this.res.length) * 100).toFixed(2),
           detail: {
             valueAnimation: false,
             offsetCenter: ["0%", "0%"]
           }
         }
-      ];
+      ]
       option = {
         series: [
           {
@@ -119,18 +153,18 @@ export default {
             detail: {
               fontSize: 20,
               color: "red",
+              borderColor: "auto",
               formatter: "{value}%"
             }
           }
         ]
-      };
-      option && myChart.setOption(option);
+      }
+      option && this.myChart.setOption(option, true)
     },
-    show1() {
-      let chartDom = document.getElementById("main1");
-      let myChart = echarts.init(chartDom);
-      let option;
-      const gaugeData = [
+    show1 () {
+      let option
+
+      let gaugeData = [
         {
           value: ((this.result["警示"] / this.res.length) * 100).toFixed(2),
           detail: {
@@ -138,7 +172,7 @@ export default {
             offsetCenter: ["0%", "0%"]
           }
         }
-      ];
+      ]
       option = {
         series: [
           {
@@ -183,14 +217,12 @@ export default {
             }
           }
         ]
-      };
-      option && myChart.setOption(option);
+      }
+      option && this.myChart1.setOption(option, true)
     },
-    show2() {
-      let chartDom = document.getElementById("main2");
-      let myChart = echarts.init(chartDom);
-      let option;
-      const gaugeData = [
+    show2 () {
+      let option
+      let gaugeData = [
         {
           value: ((this.result["提示"] / this.res.length) * 100).toFixed(2),
           detail: {
@@ -198,7 +230,7 @@ export default {
             offsetCenter: ["0%", "0%"]
           }
         }
-      ];
+      ]
       option = {
         series: [
           {
@@ -243,14 +275,12 @@ export default {
             }
           }
         ]
-      };
-      option && myChart.setOption(option);
+      }
+      option && this.myChart2.setOption(option, true)
     },
-    show3() {
-      let chartDom = document.getElementById("main3");
-      let myChart = echarts.init(chartDom);
-      let option;
-      const gaugeData = [
+    show3 () {
+      let option
+      let gaugeData = [
         {
           value: ((this.result["利好"] / this.res.length) * 100).toFixed(2),
           detail: {
@@ -258,7 +288,8 @@ export default {
             offsetCenter: ["0%", "0%"]
           }
         }
-      ];
+      ]
+
       option = {
         series: [
           {
@@ -304,102 +335,220 @@ export default {
             }
           }
         ]
-      };
-      option && myChart.setOption(option);
+      }
+      option && this.myChart3.setOption(option)
     },
-    show4() {
-      var chartDom = document.getElementById("main4");
-      var myChart = echarts.init(chartDom);
-      var option;
-
-      setTimeout(function() {
-        option = {
-          legend: {},
-          tooltip: {
-            trigger: "axis"
-          },
-          dataset: {
-            source: [
-              ["22.4", "22.5", "22.6", "22.7", "22.8", "22.9"],
-              ["提示", 56.5, 82.1, 88.7, 70.1, 53.4, 85.1],
-              ["利好", 51.1, 51.4, 55.1, 53.3, 73.8, 68.7],
-              ["警示", 20.1, 62.2, 69.5, 36.4, 45.2, 32.5],
-              ["高风险", 25.2, 37.1, 41.2, 18, 33.9, 49.1]
-            ]
-          },
-          xAxis: { type: "category", boundaryGap: false },
-          yAxis: { gridIndex: 0 },
-          grid: { top: "20%" },
-          series: [
-            {
-              type: "line",
-              smooth: true,
-              seriesLayoutBy: "row",
-              symbol: "none",
-              emphasis: { focus: "series" }
-            },
-            {
-              type: "line",
-              smooth: true,
-              symbol: "none",
-              seriesLayoutBy: "row",
-              emphasis: { focus: "series" }
-            },
-            {
-              type: "line",
-              smooth: true,
-              symbol: "none",
-              seriesLayoutBy: "row",
-              emphasis: { focus: "series" }
-            },
-            {
-              type: "line",
-              smooth: true,
-              symbol: "none",
-              seriesLayoutBy: "row",
-              emphasis: { focus: "series" }
+    show4 () {
+      var option
+      let a,
+        b = true
+      a = this.date == 604800 ? 7 : 30
+      let s = []
+      if (this.search2.length) {
+        this.search2.forEach(item2 => {
+          let r = this.ECres.find(item => {
+            if (
+              this.search2.length != 0 &&
+              this.search2.indexOf("全部") == -1
+            ) {
+              b = item.group === item2
+            } else {
+              if (item.group == "all") {
+                b = item.group == "all"
+              } else if (
+                item.group.substr(
+                  item.group.length - 3,
+                  item.group.length - 1
+                ) === "all"
+              ) {
+                b =
+                  item.group.substr(
+                    item.group.length - 3,
+                    item.group.length - 1
+                  ) === "all"
+              } else {
+                b =
+                  item.group.substr(0, 2) === "人法" ||
+                  item.group.substr(0, 2) === "数科"
+              }
             }
-          ]
-        };
-        myChart.on("updateAxisPointer", function(event) {
-          const xAxisInfo = event.axesInfo[0];
-          if (xAxisInfo) {
-            const dimension = xAxisInfo.value + 1;
-            myChart.setOption({
-              series: {
-                id: "pie",
+            return item["source_" + a] && b
+          })
+          s.push(r)
+        })
+      }
+
+      let aaa = null
+      if (s.length == 1) {
+        aaa = s[0]
+      } else {
+        let ts = [[], [], [], [], []]
+        s.forEach(item => {
+          ts[0] = item["source_" + a][0]
+          ts[1].push(item["source_" + a][1])
+          ts[2].push(item["source_" + a][2])
+          ts[3].push(item["source_" + a][3])
+          ts[4].push(item["source_" + a][4])
+        })
+        ts.forEach((item, index) => {
+          if (index > 0) {
+            ts[index] = item.reduce((prev, cur) => {
+              cur.forEach((item, index) => {
+                if (typeof prev[index] === "number") {
+                  prev[index] += item
+                } else {
+                  prev[index] = item
+                }
+              })
+              return prev
+            }, [])
+          }
+        })
+        aaa = {}
+        aaa["source_" + a] = ts
+      }
+
+      option = {
+        legend: {},
+        tooltip: {
+          trigger: "axis"
+        },
+        dataset: {
+          source: aaa["source_" + a]
+        },
+        xAxis: {
+          type: "category", boundaryGap: true, show: false, axisLabel: {
+            rotate: 45,//倾斜度 -90 至 90 默认为0
+            margin: 4,
+            fontSize: 8
+          }
+        },
+        yAxis: { gridIndex: 0 },
+
+        grid: { top: "20%" },
+        series: [
+          {
+            type: "line",
+            smooth: true,
+            seriesLayoutBy: "row",
+            // symbol: "none",
+            symbolSize: 3, //一定要加这个字段才能显示
+            itemStyle: {
+              normal: {
                 label: {
-                  formatter: "{b}: {@[" + dimension + "]} ({d}%)"
-                },
-                encode: {
-                  value: dimension,
-                  tooltip: dimension
+                  show: true,
+                  position: "top",
+                  fontSize: 8,
+                  textStyle: {
+                    color: "auto"
+                  }
                 }
               }
-            });
-          }
-        });
-        myChart.setOption(option);
-      });
+            },
 
-      option && myChart.setOption(option);
+            emphasis: { focus: "series" }
+          },
+          {
+            type: "line",
+            smooth: true,
+            // symbol: "none",
+            seriesLayoutBy: "row",
+            emphasis: { focus: "series" },
+            symbolSize: 3, //一定要加这个字段才能显示
+            itemStyle: {
+              normal: {
+                label: {
+                  show: true,
+                  position: "top",
+                  fontSize: 8,
+                  textStyle: {
+                    color: "auto"
+                  }
+                }
+              }
+            }
+          },
+          {
+            type: "line",
+            smooth: true,
+            // symbol: "none",
+            seriesLayoutBy: "row",
+            emphasis: { focus: "series" },
+            symbolSize: 3, //一定要加这个字段才能显示
+            itemStyle: {
+              normal: {
+                label: {
+                  show: true,
+                  position: "top",
+                  fontSize: 8,
+                  textStyle: {
+                    color: "auto"
+                  }
+                }
+              }
+            }
+          },
+          {
+            type: "line",
+            smooth: true,
+            // symbol: "none",
+            seriesLayoutBy: "row",
+            emphasis: { focus: "series" },
+            symbolSize: 3, //一定要加这个字段才能显示
+            itemStyle: {
+              normal: {
+                label: {
+                  show: true,
+                  position: "top",
+                  fontSize: 8,
+                  textStyle: {
+                    color: "auto"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+      // this.myChart4.on("updateAxisPointer", function (event) {
+      //   const xAxisInfo = event.axesInfo[0]
+      //   if (xAxisInfo) {
+      //     const dimension = xAxisInfo.value + 1
+      //     this.myChart4.setOption({
+      //       series: {
+      //         id: "pie",
+      //         label: {
+      //           formatter: "{b}: {@[" + dimension + "]} ({d}%)"
+      //         },
+      //         encode: {
+      //           value: dimension,
+      //           tooltip: dimension
+      //         }
+      //       }
+      //     })
+      //   }
+      // })
+
+      this.myChart4.setOption(option)
     }
   },
-  mounted() {
-    this.show();
-    this.show1();
-    this.show2();
-    this.show3();
-    this.show4();
+  mounted () {
+    let main1 = this.$refs.main1
+    this.myChart1 = echarts.init(main1)
+    let main2 = this.$refs.main2
+    this.myChart2 = echarts.init(main2)
+    let main3 = this.$refs.main3
+    this.myChart3 = echarts.init(main3)
+    let main = this.$refs.main
+    this.myChart = echarts.init(main)
+    let main4 = this.$refs.main4
+    this.myChart4 = echarts.init(main4)
+    this.into()
   },
-  created() {
-    this.res.forEach(item => {
-      if (this.result[item["等级"]]) {
-        this.result[item["等级"]]++;
-      } else {
-        this.result[item["等级"]] = 1;
-      }
-    });
+  created () {
+    this.res2 = this.$store.state.res
+    this.date = this.$store.state.date
+    this.search2 = this.$store.state.search
   }
 };
 </script>
@@ -408,14 +557,14 @@ export default {
 h3 {
   text-align: center;
 }
-.action{
-  display:flex ;
+.action {
+  display: flex;
   flex-wrap: wrap;
 }
 .code {
   margin: 10px auto;
   border-radius: 10px;
-  width: 45%;
+  width: 80%;
   border: 1px solid #eaeaea;
   display: flex;
   justify-content: space-evenly;
@@ -437,7 +586,7 @@ h3 {
     }
   }
 }
-.code2{
+.code2 {
   margin: 10px auto;
   border-radius: 10px;
   width: 80%;

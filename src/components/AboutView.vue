@@ -1,51 +1,51 @@
 <template>
-  <div id="about-view">
-    <van-nav-bar :title="title" left-text="返回" left-arrow @click-left="onClickLeft" />
+  <div id="about-view" style="padding: 40px 0">
+    <!-- <van-nav-bar :title="title" left-text="返回" left-arrow @click-left="onClickLeft" /> -->
     <div class="code">
       <div>
         <p>司法风险</p>
-        <span>{{result['司法风险']}}</span>
+        <span>{{ result["司法风险"] }}</span>
         <div @click="filter('司法风险')">查看详情</div>
       </div>
-      <div id="main" style="width:150px;height:150px"></div>
+      <div id="main" style="width: 150px; height: 150px" ref="main"></div>
     </div>
     <div class="code">
       <div>
         <p>工商风险</p>
-        <span>{{result['工商风险']}}</span>
+        <span>{{ result["工商风险"] }}</span>
         <div @click="filter('工商风险')">查看详情</div>
       </div>
-      <div id="main1" style="width:150px;height:150px"></div>
+      <div id="main1" style="width: 150px; height: 150px" ref="main1"></div>
     </div>
     <div class="code">
       <div>
         <p>经营风险</p>
-        <span>{{result['经营风险']}}</span>
+        <span>{{ result["经营风险"] }}</span>
         <div @click="filter('经营风险')">查看详情</div>
       </div>
-      <div id="main2" style="width:150px;height:150px"></div>
+      <div id="main2" style="width: 150px; height: 150px" ref="main2"></div>
     </div>
     <div class="code">
       <div>
         <p>经营状况</p>
-        <span>{{result['经营状况']}}</span>
-        <div  @click="filter('经营状况')">查看详情</div>
+        <span>{{ result["经营状况"] }}</span>
+        <div @click="filter('经营状况')">查看详情</div>
       </div>
-      <div id="main3" style="width:150px;height:150px"></div>
+      <div id="main3" style="width: 150px; height: 150px" ref="main3"></div>
     </div>
     <div class="code">
-      <div id="main4" style="width:100%;height:300px"></div>
+      <div ref="main4" style="width: 100%; height: 300px"></div>
     </div>
   </div>
 </template>
 
 <script>
-import * as echarts from "echarts";
+import * as echarts from "echarts"
 export default {
   name: "AboutView",
-  data() {
+  data () {
     return {
-      title: "",
+      date: this.$store.state.date,
       obj: {
         法院公告: "司法风险",
         失信被执行人: "司法风险",
@@ -108,29 +108,49 @@ export default {
         公告研报: "经营状况",
         资产交易: "经营状况"
       },
-      res: this.$store.state.res,
-      result: {}
-    };
+      ECres: this.$store.state.ECres,
+      result: { 司法风险: 0, 工商风险: 0, 经营风险: 0, 经营状况: 0 },
+      myChart: "",
+      myChart1: "",
+      myChart2: "",
+      myChart3: "",
+      myChart4: "",
+      res2: null,
+      res: null,
+      search2: ['全部']
+    }
   },
   methods: {
-    filter(a) {
-      let result;
-      result = this.res.filter(item => item["风险维度"] == a);
+    into () {
+      this.result = { 司法风险: 0, 工商风险: 0, 经营风险: 0, 经营状况: 0 }
+      this.res = this.res2
+      this.res.forEach(item => {
+        if (this.result[item["风险维度"]]) {
+          this.result[item["风险维度"]]++
+        } else {
+          this.result[item["风险维度"]] = 1
+        }
+      })
+      this.show()
+      this.show1()
+      this.show2()
+      this.show3()
+      this.show4()
+    },
+    filter (b) {
       this.$router.push({
         name: "details",
         params: {
-          result,
-          title: a
+          result: "风险维度",
+          b
         }
-      });
+      })
     },
-    onClickLeft() {
-      this.$router.go(-1);
-    },
-    show() {
-      let chartDom = document.getElementById("main");
-      let myChart = echarts.init(chartDom);
-      let option;
+    // onClickLeft () {
+    //   this.$router.go(-1)
+    // },
+    show () {
+      let option
       const gaugeData = [
         {
           value: ((this.result["司法风险"] / this.res.length) * 100).toFixed(2),
@@ -139,7 +159,7 @@ export default {
             offsetCenter: ["0%", "0%"]
           }
         }
-      ];
+      ]
       option = {
         series: [
           {
@@ -180,13 +200,11 @@ export default {
             }
           }
         ]
-      };
-      option && myChart.setOption(option);
+      }
+      option && this.myChart.setOption(option)
     },
-    show1() {
-      let chartDom = document.getElementById("main1");
-      let myChart = echarts.init(chartDom);
-      let option;
+    show1 () {
+      let option
       const gaugeData = [
         {
           value: ((this.result["工商风险"] / this.res.length) * 100).toFixed(2),
@@ -195,7 +213,7 @@ export default {
             offsetCenter: ["0%", "0%"]
           }
         }
-      ];
+      ]
       option = {
         series: [
           {
@@ -237,13 +255,11 @@ export default {
             }
           }
         ]
-      };
-      option && myChart.setOption(option);
+      }
+      option && this.myChart1.setOption(option)
     },
-    show2() {
-      let chartDom = document.getElementById("main2");
-      let myChart = echarts.init(chartDom);
-      let option;
+    show2 () {
+      let option
       const gaugeData = [
         {
           value: ((this.result["经营风险"] / this.res.length) * 100).toFixed(2),
@@ -252,7 +268,7 @@ export default {
             offsetCenter: ["0%", "0%"]
           }
         }
-      ];
+      ]
       option = {
         series: [
           {
@@ -293,13 +309,11 @@ export default {
             }
           }
         ]
-      };
-      option && myChart.setOption(option);
+      }
+      option && this.myChart2.setOption(option)
     },
-    show3() {
-      let chartDom = document.getElementById("main3");
-      let myChart = echarts.init(chartDom);
-      let option;
+    show3 () {
+      let option
       const gaugeData = [
         {
           value: ((this.result["经营状况"] / this.res.length) * 100).toFixed(2),
@@ -308,7 +322,7 @@ export default {
             offsetCenter: ["0%", "0%"]
           }
         }
-      ];
+      ]
       option = {
         series: [
           {
@@ -349,77 +363,113 @@ export default {
             }
           }
         ]
-      };
-      option && myChart.setOption(option);
+      }
+      option && this.myChart3.setOption(option)
     },
-    show4() {
-      var chartDom = document.getElementById("main4");
-      var myChart = echarts.init(chartDom);
-      var option;
+    show4 () {
+      let option
+      let a, b = true
+      a = this.date == 604800 ? 7 : 30
+      let s = [], r = []
+      if (this.search2.length) {
+        this.search2.forEach(item2 => {
+          r = this.ECres.find(
+            item => {
+              if (this.search2.length != 0 && this.search2.indexOf('全部') == -1) {
+                b = item.group === item2
+              } else {
+                if (item.group == 'all') { b = item.group == 'all' }
+                else if (item.group.substr(item.group.length - 3, item.group.length - 1) === 'all') {
+                  b = item.group.substr(item.group.length - 3, item.group.length - 1) === 'all'
+                } else {
+                  b = item.group.substr(0, 2) === '人法' || item.group.substr(0, 2) === '数科'
+                }
+              }
 
-      var data = [
-        { name: "专利信息", value: 271 },
-        { name: "主要人员变更", value: 5 },
-        { name: "企业类型变更", value: 3 },
-        { name: "作品著作权", value: 4 },
-        { name: "商标信息", value: 40 },
-        { name: "对外投资", value: 9 },
-        { name: "开庭公告", value: 50 },
-        { name: "招投标", value: 133 },
-        { name: "法定代表人变更", value: 4 },
-        { name: "法律诉讼", value: 41 },
-        { name: "法院公告", value: 1 },
-        { name: "注册地址变更", value: 4 },
-        { name: "注册资本变更", value: 2 },
-        { name: "电信许可", value: 5 },
-        { name: "登记机关变更", value: 2 },
-        { name: "经营范围变更", value: 5 },
-        { name: "股东变更", value: 8 },
-        { name: "股权出质", value: 1 },
-        { name: "股权变更", value: 1 },
-        { name: "融资动态", value: 2 },
-        { name: "软件著作权", value: 21 },
-        { name: "送达公告", value: 2 }
-      ];
+              return item["info_" + a] && b
+
+            }
+          )
+          s.push(r)
+        })
+      }
+
+      let aaa = null
+      if (s.length == 1) {
+        aaa = s[0]
+      } else {
+        let ts = []
+        ts = s.reduce((prev, cur) => {
+          return cur["info_" + a].concat(prev)
+        }, [])
+
+        let temp = {}   //用于name判断重复
+        let result = []  //最后的新数组
+
+        ts.map(function (item) {
+          if (!temp[item.name]) {
+            result.push(JSON.parse(JSON.stringify(item)))
+            temp[item.name] = true
+          } else {
+            result.filter(a => a.name == item.name)[0].value += item.value
+          }
+          aaa = {}
+          aaa["info_" + a] = result
+        })
+
+      }
+      let data = aaa["info_" + a]
+      data = data.sort((a, b) => {
+        let value1 = a["value"],
+          value2 = b["value"]
+        return value2 - value1
+      })
       option = {
         series: {
           type: "pie",
-          radius: [30, 60],
+          radius: [20, 40],
+          emphasis: {
+            focus: "self"
+          },
           left: "center",
-          width: "500px",
+          width: "300px",
           label: {
-            formatter: "{name|{b}}\n",
+            formatter: "{name|{b}:{c}，{d}%} \n",
             minMargin: 1,
             edgeDistance: 1,
             lineHeight: 1,
             rich: {
               name: {
-                fontSize: "10",
+                fontSize: "8",
                 color: "auto"
               }
             }
           },
           data: data
         }
-      };
-      option && myChart.setOption(option);
+      }
+      option && this.myChart4.setOption(option)
+      this.myChart4.on('click', (e) => {
+        this.$router.push({ name: 'details', params: { name: e.name } })
+      })
     }
   },
-  mounted() {
-    this.title = this.$route.params.title;
-    this.res.forEach(item => {
-      if (this.result[item["风险维度"]]) {
-        this.result[item["风险维度"]]++;
-      } else {
-        this.result[item["风险维度"]] = 1;
-      }
-    });
-    console.log(this.result);
-    this.show();
-    this.show1();
-    this.show2();
-    this.show3();
-    this.show4();
+  created () {
+    this.res2 = this.$store.state.res
+  },
+  mounted () {
+    // this.title = this.$route.params.title
+    let main1 = this.$refs.main1
+    this.myChart1 = echarts.init(main1)
+    let main2 = this.$refs.main2
+    this.myChart2 = echarts.init(main2)
+    let main3 = this.$refs.main3
+    this.myChart3 = echarts.init(main3)
+    let main = this.$refs.main
+    this.myChart = echarts.init(main)
+    let main4 = this.$refs.main4
+    this.myChart4 = echarts.init(main4)
+    this.into()
   }
 };
 </script>
@@ -428,9 +478,8 @@ h3 {
   text-align: center;
 }
 .code {
-  margin: 10px auto;
+  margin: 10px;
   border-radius: 10px;
-  width: 80%;
   border: 1px solid #eaeaea;
   display: flex;
   justify-content: space-evenly;
